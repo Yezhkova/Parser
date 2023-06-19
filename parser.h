@@ -1,107 +1,144 @@
-#pragma once
+﻿#pragma once
+#include "Token.h"
+#include <deque>
 #include <iostream>
 #include <list>
-#include <string>
+#include <map>
 #include <sstream>
+#include <string>
 #include <vector>
 
-enum class TokenType { // map -     NUMBER, SYMBOL separately
-    NUMBER,
-    PLUS,
-    MINUS,
-    OPENBRACKET,
-    CLOSEBRACKET,
-    SPACE,
-    QUOTE,
-    QUOTES,
-    SYMBOL,
-    END
-};
+class Parser
+{ // из исходного текста - список токенов
 
-struct Token {
-    TokenType type;
-    std::string value;
-};
+    std::string m_input;
+    size_t m_position;
+    std::list<Token> m_tokenList;
 
-//Token makeToken(char currentChar)
-//{
-//if(find currentChar in TokenType map)
-//    return Token(..., currentChar);
-//}
+    bool m_stringStarted = false; // inside " "
+    int m_stringBeginPosition;
 
-class Parser {
+    bool m_atomStarted = false; // everything else (function, variable etc..)
+    int m_atomBeginPosition;
+    bool m_atomEnded = false;
+
+    std::string m_parsedAtom;
+    std::string m_parsedString;
+
 public:
-    Parser(const std::string& input) : input_(input), position_(0) {}
+    Parser(const std::string &input)
+        : m_input(input)
+        , m_position(0)
+    {}
 
-    Token getNextToken() {
-        if (position_ >= input_.size()) {
-            return { TokenType::END, "" };
-        }
-
-        char currentChar = input_[position_];
-        if (isdigit(currentChar)) {
-            std::stringstream numberStream;
-            while (position_ < input_.size() && isdigit(input_[position_])) {
-                numberStream << input_[position_];
-                position_++;
+    TokenType getNextToken()
+    {
+        if (m_position >= m_input.size()) {
+            if (m_atomStarted) {
+                m_atomEnded = true;
             }
-            return { TokenType::NUMBER, numberStream.str() };
+
+            return TokenType::END;
         }
-        else if (currentChar == '+') {
-            position_++;
-            return { TokenType::PLUS, "+" };
-        }
-        else if (currentChar == '-') {
-            position_++;
-            return { TokenType::MINUS, "-" };
-        }
-        else if (currentChar == '(') {
-            position_++;
-            return { TokenType::OPENBRACKET, "(" };
+
+        char currentChar = m_input[m_position];
+
+        if (currentChar == '(') {
+            m_position++;
+            if (m_atomStarted) {
+                m_atomEnded = true;
+            }
+            return TokenType::OPEN_BRACKET;
         }
         else if (currentChar == ')') {
-            position_++;
-            return { TokenType::CLOSEBRACKET, ")" };
+            m_position++;
+            if (m_atomStarted) {
+                m_atomEnded = true;
+            }
+            return TokenType::CLOSE_BRACKET;
         }
         else if (currentChar == ' ') {
-            position_++;
-            return { TokenType::SPACE, " " };
+            m_position++;
+            if (m_atomStarted) {
+                m_atomEnded = true;
+            }
+            return TokenType::SPACE;
         }
         else if (currentChar == '"') {
-            position_++;
-            return { TokenType::QUOTES, "\"" };
+            m_position++;
+
+            if (!m_stringStarted && m_atomStarted) {
+                m_atomEnded = true;
+            }
+
+            else if (m_stringStarted) {
+                m_stringStarted = false;
+                m_parsedString = std::string(m_input.begin() + m_stringBeginPosition,
+                                             m_input.begin() + m_position - 1);
+                return TokenType::STRING;
+            }
+            m_stringStarted = true;
+            m_stringBeginPosition = m_position;
+            return TokenType::SKIP;
         }
         else if (currentChar == '\'') {
-            position_++;
-            return { TokenType::QUOTE, "\'" };
+            m_position++;
+            if (m_atomStarted) {
+                m_atomEnded = true;
+            }
+
+            return TokenType::QUOTE;
         }
+        else if(m_stringStarted){
+            m_position++;
+            return TokenType::SKIP;
+        }
+
         else {
-            position_++;
-            return { TokenType::SYMBOL, std::string(1, currentChar) };
+            if (!m_atomStarted) {
+                m_atomStarted = true;
+                m_atomBeginPosition = m_position;
+            }
+            m_position++;
+            return TokenType::SKIP;
         }
+
 
         throw std::runtime_error("Invalid token");
     }
 
-    void parse() {
-        Token currentToken;
-        do{
-            currentToken = getNextToken();
-            tokenList_.push_back(std::move(currentToken));
-        }
-        while(currentToken.type != TokenType::END);
+    void parse()
+    {
+        TokenType currentTokenType;
+        do {
+            currentTokenType = getNextToken();
+
+            if (m_atomStarted && m_atomEnded) {
+                m_atomStarted = false;
+                m_atomEnded = false;
+                m_parsedAtom = std::string(m_input.begin() + m_atomBeginPosition,
+                                           m_input.begin() + m_position - 1);
+                m_tokenList.push_back(std::move(Token{TokenType::ATOM, m_parsedAtom}));
+            }
+
+            if (currentTokenType == TokenType::SKIP) {
+                continue;
+            }
+
+            if (currentTokenType == TokenType::STRING) {
+                m_tokenList.push_back(std::move(Token{TokenType::STRING, m_parsedString}));
+                continue;
+            }
+
+            m_tokenList.push_back(std::move(Token{currentTokenType, {}}));
+        } while (currentTokenType != TokenType::END);
     }
 
     void print()
     {
-        for(auto& token: tokenList_){
-            std::cout << token.value;
+        for (auto &token : m_tokenList) {
+            std::cout << int(token.type);
         }
         std::cout << '\n';
     }
-
-private:
-    std::string input_;
-    size_t position_;
-    std::list<Token> tokenList_;
 };

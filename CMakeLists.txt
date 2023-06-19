@@ -5,10 +5,15 @@ project(Parser LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(SOURCE
-    main.cpp
+set(SOURCE      main.cpp
     parser.h    parser.cpp
-    mylists.h   mylists.cpp)
+    mylists.h   mylists.cpp
+    scanner.h   scanner.cpp
+    executor.h  executor.cpp
+    Token.h
+    TokenType.h
+    LispItem.h
+)
 
 add_executable(Parser ${SOURCE})
 
