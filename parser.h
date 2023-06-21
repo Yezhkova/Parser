@@ -13,7 +13,7 @@ class Parser
 
     std::string m_input;
     size_t m_position;
-    std::list<Token> m_tokenList;
+    std::deque<Token> m_tokenList;
 
     bool m_stringStarted = false; // inside " "
     int m_stringBeginPosition;
@@ -30,6 +30,11 @@ public:
         : m_input(input)
         , m_position(0)
     {}
+
+    const std::deque<Token>& getTokenList() const
+    {
+        return m_tokenList;
+    }
 
     TokenType getNextToken()
     {

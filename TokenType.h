@@ -5,7 +5,6 @@ enum class TokenType {
     CLOSE_BRACKET, // 1
     SPACE,         // 2
     QUOTE,         // 3
-//    DOUBLE_QUOTE,  // 4
     STRING,        // 4
     ATOM,          // 5
     SKIP,          // 6

@@ -10,6 +10,8 @@ set(SOURCE      main.cpp
     mylists.h   mylists.cpp
     scanner.h   scanner.cpp
     executor.h  executor.cpp
+    builtinfuncmap.h builtinfuncmap.cpp
+    variablemap.h variablemap.cpp
     Token.h
     TokenType.h
     LispItem.h
