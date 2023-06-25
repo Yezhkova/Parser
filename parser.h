@@ -25,6 +25,19 @@ class Parser
     std::string m_parsedAtom;
     std::string m_parsedString;
 
+    void process()
+    {
+        m_position++;
+        endAtom();
+    }
+
+    void endAtom()
+    {
+        if (m_atomStarted) {
+            m_atomEnded = true;
+        }
+    }
+
 public:
     Parser(const std::string &input)
         : m_input(input)
@@ -49,24 +62,15 @@ public:
         char currentChar = m_input[m_position];
 
         if (currentChar == '(') {
-            m_position++;
-            if (m_atomStarted) {
-                m_atomEnded = true;
-            }
+            process();
             return TokenType::OPEN_BRACKET;
         }
         else if (currentChar == ')') {
-            m_position++;
-            if (m_atomStarted) {
-                m_atomEnded = true;
-            }
+            process();
             return TokenType::CLOSE_BRACKET;
         }
         else if (currentChar == ' ') {
-            m_position++;
-            if (m_atomStarted) {
-                m_atomEnded = true;
-            }
+            process();
             return TokenType::SPACE;
         }
         else if (currentChar == '"') {
@@ -87,11 +91,7 @@ public:
             return TokenType::SKIP;
         }
         else if (currentChar == '\'') {
-            m_position++;
-            if (m_atomStarted) {
-                m_atomEnded = true;
-            }
-
+            process();
             return TokenType::QUOTE;
         }
         else if(m_stringStarted){

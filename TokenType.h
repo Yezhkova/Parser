@@ -10,3 +10,5 @@ enum class TokenType {
     SKIP,          // 6
     END            // 7
 };
+// ("fgjkh'jhgf")
+// ("ghj'(vbj)")

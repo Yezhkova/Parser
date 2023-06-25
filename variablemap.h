@@ -6,10 +6,8 @@
 
 class VariableMap
 {
-    std::map<std::string, LispItem> m_variableMap;
-
 public:
-
+    std::map<std::string, LispItem> m_variableMap;
     VariableMap();
 };
 

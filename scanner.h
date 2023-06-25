@@ -6,8 +6,8 @@
 class Scanner // из вектора токенов - лисп дерево
 {
 public:
-    // add print function
-    LispItem root;
+
+    LispItem root; // почему это root, если это не элемент списка, а список в нем самом?
 
     void scan(std::deque<Token> tokenList){
         for (auto tokenIt = tokenList.begin(); tokenIt != tokenList.end(); ++tokenIt)
@@ -29,7 +29,6 @@ public:
         LispItem item; //
 
         for (; tokenIt != endIt; ++tokenIt) {
-            std::cout << int(tokenIt->type)<<'\n';
             if (tokenIt->type == TokenType::OPEN_BRACKET)
             {
                 // list starts
